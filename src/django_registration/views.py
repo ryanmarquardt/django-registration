@@ -68,7 +68,7 @@ class RegistrationView(FormView):
         raise NotImplementedError
 
 
-class ActivationView(TemplateView):
+class BaseActivationView(TemplateView):
     """
     Base class for user activation views.
 
@@ -83,7 +83,7 @@ class ActivationView(TemplateView):
         """
         return force_text(self.success_url)
 
-    def get(self, *args, **kwargs):
+    def _attempt_activation(self, *args, **kwargs):
         """
         The base activation logic; subclasses should leave this method
         alone and implement activate(), which is called from this
@@ -110,7 +110,7 @@ class ActivationView(TemplateView):
                     self.get_success_url(activated_user)
                 )
             )
-        context_data = self.get_context_data()
+        context_data = self.get_context_data(**kwargs)
         context_data.update(extra_context)
         return self.render_to_response(context_data)
 
@@ -120,3 +120,12 @@ class ActivationView(TemplateView):
 
         """
         raise NotImplementedError
+
+
+class ActivationView(BaseActivationView):
+    def get(self, *args, **kwargs):
+        """
+        Attempt to activate the user
+
+        """
+        return self._attempt_activation(*args, **kwargs)
